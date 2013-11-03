@@ -1,0 +1,31 @@
+{
+    "name": "jslibrary",
+    "version": "0.0.0",
+    "description": "JS Twice Library",
+    "keywords": [
+        "javascript",
+        "jquery",
+        "angular",
+        "bootstrap"
+    ],
+    "authors": [
+        "Luiz Carlos"
+    ],
+    "license": "MIT",
+    "ignore": [
+        "**/.*",
+        "node_modules",
+        "bower_components",
+        "test",
+        "tests"
+    ],
+    "dependencies": {
+        "jquery": "1.10.0",
+        "angular": "1.0.7",
+        "blockui": "master",
+        "jquery.validation": "1.11.1",
+        "datatables": "1.9.4",
+        "jquery.ui": "1.10.3",
+        "requirejs": "2.1.8"
+    }
+}
