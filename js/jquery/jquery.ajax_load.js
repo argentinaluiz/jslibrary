@@ -1,4 +1,4 @@
-define(['jquery','libs/jquery.blockUI'], function($) {
+define(['jquery','blockui'], function($) {
     'use strict';
     var carregandodados = {
         overlayCSS: {

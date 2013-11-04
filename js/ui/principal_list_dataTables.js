@@ -1,4 +1,4 @@
-define(['jquery', 'libs/jquery.dataTables'], function($) {
+define(['jquery', 'datatables'], function($) {
     'use strict';
     $.extend($.fn.dataTableExt.oStdClasses, {
         sProcessing: "alert alert-info dataTables_processing"

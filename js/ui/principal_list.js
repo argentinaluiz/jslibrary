@@ -1,12 +1,12 @@
 define([
     'jquery',
-    'libs/jquery.ajax_load',
-    'jquery-ui',
-    'libs/jquery.msg',
-    'libs/jquery.blockUI',
-    'libs/jquery.dataTables',
-    'libs/principal_list_dataTables',
-    'libs/bootstrap'
+    'jquery.ajax_load',
+    'jquery.ui',
+    'jquery.msg',
+    'blockui',
+    'datatables',
+    'principal_list_dataTables',
+    'bootstrap'
 ], function($) {
     'use strict';
     var principal = function Principal_List() {

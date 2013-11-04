@@ -1,4 +1,4 @@
-define(['jquery', 'jquery.validate', 'libs/jquery.string'], function($) {
+define(['jquery', 'jquery.validation', 'jquery.string'], function($) {
     'use strict';
     $.validator.addMethod("validaTelefone", function(value, element) {
         value = $().pegarNumeros(value);

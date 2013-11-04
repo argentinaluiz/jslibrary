@@ -1,3 +1,10 @@
-/nbproject/
-/.git/
-/bower_components/
+node_modules
+dist
+.tmp
+.sass-cache
+app
+.git
+nbproject
+test
+/Gruntfile.js
+/package.json
