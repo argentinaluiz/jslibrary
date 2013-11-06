@@ -9,7 +9,8 @@
         "js/jquery/jquery.moeda.js",
         "js/jquery/jquery.msg.js",
         "js/jquery/jquery.string.js",
-        "js/jquery/jquery.validacoes.js"
+        "js/jquery/jquery.validacoes.js",
+        "js/jquery/jquery-scrollto.js"
     ],
     "dependencies": {
         "jquery": "1.10.0",
