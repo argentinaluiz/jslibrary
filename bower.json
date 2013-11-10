@@ -2,6 +2,7 @@
     "name": "jslibrary",
     "version": "0.0.0",
     "main": [
+        "js/angular/angular-jslibrary.js",
         "js/ui/principal_list.js",
         "js/ui/principal_list_dataTables.js",
         "js/jquery/jquery.ajax_load.js",
