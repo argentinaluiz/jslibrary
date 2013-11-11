@@ -15,7 +15,7 @@
     ],
     "dependencies": {
         "jquery": "1.10.0",
-        "angular": "1.0.7",
+        "angular": "1.0.3",
         "blockui": "master",
         "jquery.validation": "1.11.1",
         "datatables": "1.9.4",
