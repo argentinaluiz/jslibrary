@@ -173,9 +173,9 @@ define(['jquery', 'jquery.validation', 'jquery.string'], function($) {
                 return false;
 
             //Checks for mm/dd/yyyy format.
-            dtMonth = dtArray[3];
-            dtDay = dtArray[1];
-            dtYear = dtArray[5];
+            var dtMonth = dtArray[3];
+            var dtDay = dtArray[1];
+            var dtYear = dtArray[5];
 
             if (dtMonth < 1 || dtMonth > 12)
                 return false;
