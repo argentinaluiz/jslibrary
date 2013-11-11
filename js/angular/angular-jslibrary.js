@@ -1,6 +1,7 @@
 var jslibrary = angular.module('jslibrary', []);
 
 jslibrary.directive('ngInitial', [function() {
+        'use strict';
         return {
             restrict: 'A',
             controller: ['$scope', '$element', '$attrs', '$parse', function($scope, $element, $attrs, $parse) {
