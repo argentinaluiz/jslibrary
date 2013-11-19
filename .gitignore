@@ -9,3 +9,5 @@ test
 /Gruntfile.js
 /package.json
 /bower_components/
+/config.js
+/pages/

@@ -16,23 +16,23 @@ define([
             idTooltipMessage: null,
             idTabela: null,
             idOpcoesConsulta: null,
-            idDivPaginacao: null,
+            //idDivPaginacao: null, //nao usado
             idLabelBusca: null,
-            idInfoConsulta: null,
+            //idInfoConsulta: null, //nao usado
             idHeadCheckTable: null,
             "aoColumns": [],
             idMsgExcluir: "#msgExcluir",
             idTdCheckTable: "tblTdCheck",
             constCodigos: "codigos",
-            constConsulta: "consulta",
-            constOpcoesConsulta: "opcoesConsulta",
+            //constConsulta: "consulta", //nao usado
+            //constOpcoesConsulta: "opcoesConsulta", //nao usado
             urlBuscarRegistros: null,
             urlExcluirRegistros: null,
-            numDadosMostrar: 0,
-            numPaginas: 0,
-            numTotalDados: 0,
-            paginaAtual: 1,
-            msgAntesExcluir: "",
+            //numDadosMostrar: 0, //nao usado
+            //numPaginas: 0, //nao usado
+            //numTotalDados: 0, //nao usado
+            //paginaAtual: 1, //nao usado
+            //msgAntesExcluir: "", //nao usado
             contentMsgExcluir: "<div id='msgExcluir' class='modal hide fade' tabindex='-1'" +
                     "role='dialog' aria-labelledby='msgExcluirLabel' aria-hidden='true'>" +
                     "<div class='modal-header'>" +
