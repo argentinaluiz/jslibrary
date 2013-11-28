@@ -80,5 +80,4 @@ jslibrary.directive('ngGotopath', [ngGotopathDirective]);
 jslibrary.directive('ngMessagemodel', [ngMessagemodelDirective]);
 
 jslibrary.service('$jsUrl', jsUrl);
-
 jslibrary.service('$jsTooltip', jsUrl);
