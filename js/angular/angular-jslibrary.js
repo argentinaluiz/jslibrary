@@ -9,10 +9,21 @@ var ngInitialDirective = function() {
     return {
         restrict: 'A',
         controller: ['$scope', '$attrs', '$parse', function($scope, $attrs, $parse) {
-                var val = $attrs.ngInitial || $attrs.value,
-                        getter = $parse($attrs.ngModel),
-                        setter = getter.assign;
-                return setter($scope, val);
+                var val, getter, setter;
+                if ($attrs.type === "checkbox" || $attrs.type === "radio") {
+                    if ($attrs.type === "checkbox")
+                        val = $attrs.checked;
+                    else if ($attrs.checked)
+                        val = $attrs.ngInitial || $attrs.value;
+                }
+                else
+                    val = $attrs.ngInitial || $attrs.value;
+                if (val !== undefined) {
+                    getter = $parse($attrs.ngModel);
+                    setter = getter.assign;
+                    return setter($scope, val);
+                }
+
             }]
     };
 };
