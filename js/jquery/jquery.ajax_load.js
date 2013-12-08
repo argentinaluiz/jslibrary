@@ -1,4 +1,4 @@
-define(['jquery','blockui'], function($) {
+define(['jquery', 'blockui'], function($) {
     'use strict';
     var carregandodados = {
         overlayCSS: {
@@ -8,12 +8,13 @@ define(['jquery','blockui'], function($) {
         },
         fadeIn: 10,
         fadeOut: 20,
-        centerY: 0,
         css: {
             top: '50px',
-            left: ($(window).width() - 105) / 2 + $(window).scrollLeft() + "px",
+            left: function() {
+                return($(window).width() - 105) / 2 + $(window).scrollLeft() + "px";
+            },
             right: '',
-            width: 'auto',
+            width: '105px',
             "font-size": '14px',
             border: '',
             background: '',
@@ -38,7 +39,12 @@ define(['jquery','blockui'], function($) {
         if (message == undefined)
             carregandodados.message = '<div class="btn btn-warning"><strong>Carregando...</strong></div>';
         else
+        if (typeof message !== "object")
             carregandodados.message = '<div class="btn btn-warning"><strong>' + message + '</strong></div>';
+        else {
+            $.extend(carregandodados, message);
+            carregandodados.message = '<div class="btn btn-warning"><strong>' + message.message + '</strong></div>';
+        }
         $.blockUI(carregandodados);
     };
 });

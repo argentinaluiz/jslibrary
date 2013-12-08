@@ -16,35 +16,30 @@ define([
             idTooltipMessage: null,
             idTabela: null,
             idOpcoesConsulta: null,
-            //idDivPaginacao: null, //nao usado
             idLabelBusca: null,
-            //idInfoConsulta: null, //nao usado
             idHeadCheckTable: null,
             "aoColumns": [],
             idMsgExcluir: "#msgExcluir",
             idTdCheckTable: "tblTdCheck",
             constCodigos: "codigos",
-            //constConsulta: "consulta", //nao usado
-            //constOpcoesConsulta: "opcoesConsulta", //nao usado
             urlBuscarRegistros: null,
             urlExcluirRegistros: null,
-            //numDadosMostrar: 0, //nao usado
-            //numPaginas: 0, //nao usado
-            //numTotalDados: 0, //nao usado
-            //paginaAtual: 1, //nao usado
-            //msgAntesExcluir: "", //nao usado
-            contentMsgExcluir: "<div id='msgExcluir' class='modal hide fade' tabindex='-1'" +
+            contentMsgExcluir: "<div class='modal fade' id='msgExcluir' tabindex='-1'" +
                     "role='dialog' aria-labelledby='msgExcluirLabel' aria-hidden='true'>" +
+                    "<div class='modal-dialog'>" +
+                    "<div class='modal-content'>" +
                     "<div class='modal-header'>" +
-                    "<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>×</button>" +
-                    "<h3 id='msgExcluirLabel'>Mensagem de Advertência</h3>" +
+                    "<button type='button' class='close' data-dismiss='modal' aria-hidden='true'>&times;</button>" +
+                    "<h4 class='modal-title' id='msgExcluirLabel'> Mensagem de Advertência </h4>" +
                     "</div>" +
                     "<div class='modal-body'>" +
-                    "<p>Deseja Remover os Selecionados??</p>" +
+                    "Remover registros selecionados?" +
                     "</div>" +
                     "<div class='modal-footer'>" +
-                    "<button class='btn btn-primary' data-dismiss='modal'>Confirmar</button>" +
-                    "<button class='btn' data-dismiss='modal' aria-hidden='true'>Cancelar</button>" +
+                    "<button type='button' class='btn btn-primary' data-dismiss='modal'> Confirmar </button>" +
+                    "<button type='button' class='btn btn-default' data-dismiss='modal'> Cancelar </button>" +
+                    "</div>" +
+                    "</div>" +
                     "</div>" +
                     "</div>"
         };
@@ -52,11 +47,16 @@ define([
         this.alterarOpcoesConsulta = null;
         this.mostrarLabelBusca = null;
         this.getOpcoesConsulta = null;
+        this.onsubmit = function(form) {
+            var $root = this;
+            $(form).eq(0).submit(function(event) {
+                $($root.vars.idTabela).dataTable().fnDraw();
+                event.preventDefault();
+            });
+        };
 
     };
     principal.prototype = {
-        ajaxActive: function() {
-        },
         popularTabela: null,
         getCheckbox_Checked: function() {
             return $("input:checkbox:checked[name=" + this.vars.idTdCheckTable + "]").parent();
@@ -105,7 +105,7 @@ define([
                     dados[$root.vars.constCodigos][index] = $(this).parent().find("input:hidden").val();
                 });
                 $().ajaxLoad({
-                    type: 'get',
+                    type: 'post',
                     url: $root.vars.urlExcluirRegistros,
                     timeout: 15000,
                     data: dados,
@@ -152,17 +152,17 @@ define([
             $($root.vars.idTabela).dataTable({
                 //"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
                 //"sDom": "<'row-fluid'<'span6'><'span6'f>r>t<'row-fluid'<'span6'il><'span6'p>>",
-                "sDom": "<'row-fluid'r>t<'row-fluid'<'span6'il><'span6'p>>",
+                //"sDom": "<'row'r>t<'row'<'col-md-6'il><'col-md-6'p>>",
                 "sPaginationType": "bootstrap",
                 //"sStripeOdd": "alert alert-info",
                 //"sStripeEven": "even",
                 "bScrollCollapse": true,
                 "bFilter": false,
-                "sScrollY": "250px",
-                "bProcessing": true,
+                "bProcessing": false,
                 "bServerSide": true,
                 "sAjaxSource": $root.vars.urlBuscarRegistros,
                 "sAjaxDataProp": "rows",
+                "iDisplayLength": 25,
                 "oLanguage": {
                     "sLengthMenu": '<select class="pagesize">' +
                             '<option value="10">10</option>' +
@@ -198,13 +198,21 @@ define([
                 },
                 "fnServerData": function(sUrl, aoData, fnCallback, oSettings) {
 
-                    oSettings.jqXHR = $.ajax({
+                    oSettings.jqXHR = $().ajaxLoad({
                         "url": sUrl,
                         "data": aoData,
-                        "success": fnCallback,
+                        "success": function(json) {
+                            $.unblockUI();
+                            fnCallback(json);
+                        },
                         "dataType": "json",
                         "cache": false,
+                        "message": {
+                            message: 'Carregando...',
+                            showOverlay: false
+                        },
                         "error": function(erro, status) {
+                            $.unblockUI();
                             if (erro.readyState == 0 || erro.status == 0)
                                 return;
                             if (status == "timeout")
@@ -237,17 +245,20 @@ define([
                 $(this.vars.idOpcoesConsulta).change(this.alterarOpcoesConsulta);
             this.prepararTabela();
             if (this.vars.idHeadCheckTable != null)
-                $(this.vars.idHeadCheckTable).click(function() {
-                    console.log("asdf");
+                $(this.vars.idHeadCheckTable).click(function(e) {
                     if (this.checked)
-                        $("input[name=" + $root.vars.idTdCheckTable + ']:not(:checked)').attr('checked', true);
+                        $("input[name=" + $root.vars.idTdCheckTable + ']:not(:checked)').each(function() {
+                            this.checked = true;
+                        });
                     else
-                        $("input[name=" + $root.vars.idTdCheckTable + "]").attr('checked', false);
+                        $("input[name=" + $root.vars.idTdCheckTable + "]").each(function() {
+                            this.checked = false;
+                        });
                 });
 
             this.acaoConsultar();
             this.acaoExcluir();
-            this.ajaxActive();
+            this.onsubmit('form');
         }
     };
     return principal;

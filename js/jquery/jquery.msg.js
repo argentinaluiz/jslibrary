@@ -10,7 +10,10 @@ define(['jquery', 'blockui'], function($) {
         css: {
             top: '50px',
             right: '',
-            width: 'auto',
+            left: function() {
+                return($(window).width() - 200) / 2 + $(window).scrollLeft() + "px";
+            },
+            width: '200px',
             "font-size": '14px',
             border: '',
             background: '',
@@ -24,45 +27,45 @@ define(['jquery', 'blockui'], function($) {
     },
     icon_adv, icon_inf, icon_err;
 
-    icon_adv = document.createElement("i");
-    icon_adv.setAttribute('class', "icon-warning-sign");
+    icon_adv = document.createElement("span");
+    icon_adv.setAttribute('class', "glyphicon glyphicon-exclamation-sign");
 
-    icon_inf = document.createElement("i");
-    icon_inf.setAttribute('class', "icon-info-sign");
+    icon_inf = document.createElement("span");
+    icon_inf.setAttribute('class', "glyphicon glyphicon-exclamation-sign");
 
-    icon_err = document.createElement("i");
-    icon_err.setAttribute('class', "icon-warning-sign");
+    icon_err = document.createElement("span");
+    icon_err.setAttribute('class', "glyphicon glyphicon-exclamation-sign");
 
     $.fn.msgSuccess = function(msg) {
         $.unblockUI();
-        blockUIMessage.message = "<div class='alert alert-success'>" +
-                icon_inf.outerHTML +
+        blockUIMessage.message = "<h4><div class='alert alert-success'>" +
+                icon_inf.outerHTML + "&nbsp;" +
                 msg +
-                "</div>";
+                "</div></h4>";
         $.blockUI(blockUIMessage);
     };
     $.fn.msgInfo = function(msg) {
         $.unblockUI();
-        blockUIMessage.message = "<div class='alert alert-info'>" +
-                icon_inf.outerHTML +
+        blockUIMessage.message = "<h4><div class='alert alert-info'>" +
+                icon_inf.outerHTML + "&nbsp;" +
                 msg +
-                "</div>";
+                "</div></h4>";
         $.blockUI(blockUIMessage);
     };
     $.fn.msgWarning = function(msg) {
         $.unblockUI();
-        blockUIMessage.message = "<div class='alert alert-warning'>" +
-                icon_adv.outerHTML +
+        blockUIMessage.message = "<h4><div class='label label-warning'>" +
+                icon_adv.outerHTML + "&nbsp;" +
                 msg +
-                "</div>";
+                "</div></h4>";
         $.blockUI(blockUIMessage);
     };
     $.fn.msgError = function(msg) {
         $.unblockUI();
-        blockUIMessage.message = "<div class='alert alert-error'>" +
-                icon_err.outerHTML +
+        blockUIMessage.message = "<h4><div class='label label-danger'>" +
+                icon_err.outerHTML + "&nbsp;" +
                 msg +
-                "</div>";
+                "</div></h4>";
         $.blockUI(blockUIMessage);
     };
     $.fn.showMessageErr = function(mensagem) {

@@ -1,0 +1,49 @@
+body {
+    padding-top: 60px;
+    padding-bottom: 40px;
+}
+
+.help-block{
+    list-style:none;
+    padding-left: 0;
+}
+
+.zf-green {
+    color: #68b604;
+}
+
+div.container a.brand {
+    background: url("../img/zf2-logo.png") no-repeat scroll 0 10px transparent;
+    margin-left: 0;
+    padding: 8px 20px 12px 40px;
+}
+
+#tabela td > a:link,
+#tabela td > a:visited,
+#tabela td > a:active
+{
+    color: #000;
+    text-decoration:#000;
+}
+
+ul[id=panelBusca]{
+    margin-bottom: -10px;
+}
+
+#tabela {
+    border-top: 1px solid #DDDDDD;
+    line-height: 1.42857;
+    padding: 8px;
+    vertical-align: top;
+    border-bottom: 1px solid #DDDDDD;
+}
+
+.dividerButton{
+    margin-top: 10px;
+}
+
+.modal {
+    display: block;
+    height: 0;
+    overflow: visible;
+}

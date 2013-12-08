@@ -1,7 +1,22 @@
 define(['jquery', 'datatables'], function($) {
     'use strict';
+    /*$.extend($.fn.dataTableExt.oStdClasses, {
+     sProcessing: "label label-info dataTables_processing"
+     });*/
+    /* Set the defaults for DataTables initialisation */
+    $.extend(true, $.fn.dataTable.defaults, {
+        "sDom": "<'row'<'col-xs-5'l><'col-xs-7'fp>r>t<'row'<'col-xs-5'i><'col-xs-7'p>>",
+        "sPaginationType": "bootstrap",
+        "oLanguage": {
+            "sLengthMenu": "_MENU_ records per page"
+        }
+    });
+
+    /* Default class modification */
     $.extend($.fn.dataTableExt.oStdClasses, {
-        sProcessing: "alert alert-info dataTables_processing"
+        "sWrapper": "dataTables_wrapper form-inline",
+        "sFilterInput": "form-control input-sm",
+        "sLengthSelect": "form-control input-sm"
     });
 
     /* API method to get paging information */
@@ -20,45 +35,37 @@ define(['jquery', 'datatables'], function($) {
         };
     };
 
-
     /* Bootstrap style pagination control */
     $.extend($.fn.dataTableExt.oPagination, {
         "bootstrap": {
             "fnInit": function(oSettings, nPaging, fnDraw) {
-                var oLang = oSettings.oLanguage.oPaginate,
-                        fnClickHandler = function(e) {
-                            e.preventDefault();
-                            if (oSettings.oApi._fnPageChange(oSettings, e.data.action)) {
-                                fnDraw(oSettings);
-                            }
-                        }, els;
+                var oLang = oSettings.oLanguage.oPaginate;
+                var fnClickHandler = function(e) {
+                    e.preventDefault();
+                    if (oSettings.oApi._fnPageChange(oSettings, e.data.action)) {
+                        fnDraw(oSettings);
+                    }
+                };
 
-                $(nPaging).addClass('pagination').append(
-                        '<ul>' +
+                $(nPaging).append(
+                        '<ul class="pagination">' +
                         '<li class="first disabled"><a href="#">' + oLang.sFirst + '</a></li>' +
                         '<li class="prev disabled"><a href="#">' + oLang.sPrevious + '</a></li>' +
                         '<li class="next disabled"><a href="#">' + oLang.sNext + '</a></li>' +
                         '<li class="last disabled"><a href="#">' + oLang.sLast + '</a></li>' +
                         '</ul>'
                         );
-                els = $('a', nPaging);
+                var els = $('a', nPaging);
                 $(els[0]).bind('click.DT', {action: "first"}, fnClickHandler);
                 $(els[1]).bind('click.DT', {action: "previous"}, fnClickHandler);
                 $(els[2]).bind('click.DT', {action: "next"}, fnClickHandler);
                 $(els[3]).bind('click.DT', {action: "last"}, fnClickHandler);
             },
             "fnUpdate": function(oSettings, fnDraw) {
-                var iListLength = 5,
-                        oPaging = oSettings.oInstance.fnPagingInfo(),
-                        an = oSettings.aanFeatures.p,
-                        i,
-                        ien,
-                        j,
-                        sClass,
-                        iStart,
-                        iEnd,
-                        iHalf;
-                iHalf = Math.floor(iListLength / 2);
+                var iListLength = 5;
+                var oPaging = oSettings.oInstance.fnPagingInfo();
+                var an = oSettings.aanFeatures.p;
+                var i, ien, j, sClass, iStart, iEnd, iHalf = Math.floor(iListLength / 2);
 
                 if (oPaging.iTotalPages < iListLength) {
                     iStart = 1;
@@ -112,7 +119,6 @@ define(['jquery', 'datatables'], function($) {
         }
     });
 
-
     /*
      * TableTools Bootstrap compatibility
      * Required TableTools 2.1+
@@ -122,7 +128,7 @@ define(['jquery', 'datatables'], function($) {
         $.extend(true, $.fn.DataTable.TableTools.classes, {
             "container": "DTTT btn-group",
             "buttons": {
-                "normal": "btn",
+                "normal": "btn btn-default",
                 "disabled": "disabled"
             },
             "collection": {
@@ -149,10 +155,4 @@ define(['jquery', 'datatables'], function($) {
             }
         });
     }
-    /* Default class modification */
-    $.extend($.fn.dataTableExt.oStdClasses, {
-        "sWrapper": "dataTables_wrapper form-inline",
-        "sStripeOdd": "alert alert-info",
-        "sStripeEven": "even"
-    });
 });

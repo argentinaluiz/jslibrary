@@ -3,25 +3,26 @@
     "version": "0.0.0",
     "main": [
         "js/angular/angular-jslibrary.js",
-        "js/ui/principal_list.js",
-        "js/ui/principal_list_dataTables.js",
+        "js/jquery/jquery-scrollto.js",
         "js/jquery/jquery.ajax_load.js",
         "js/jquery/jquery.buscacep.js",
         "js/jquery/jquery.moeda.js",
         "js/jquery/jquery.msg.js",
         "js/jquery/jquery.string.js",
         "js/jquery/jquery.validacoes.js",
-        "js/jquery/jquery-scrollto.js"
+        "js/ui/principal_list.js",
+        "js/ui/principal_list_dataTables.js"
     ],
     "dependencies": {
-        "jquery": "1.10.0",
-        "angular": "1.0.3",
+        "angular": "1.0.5",
+        "angular-bootstrap": "0.7.0",
         "blockui": "master",
-        "jquery.validation": "1.11.1",
+        "bootstrap": ">=3.0.2",
         "datatables": "1.9.4",
+        "jquery": "1.10.0",
         "jquery.ui": "1.10.3",
-        "requirejs": "2.1.8",
-        "bootstrap": "2.3.2"
+        "jquery.validation": "1.11.1",
+        "requirejs": "2.1.9"
     },
     "devDependencies": {}
 }
