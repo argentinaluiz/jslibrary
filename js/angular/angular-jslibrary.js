@@ -119,7 +119,7 @@ define([
                     restrict: 'A',
                     controller: ['$element', '$attrs', '$jsUrl', function($element, $attrs, $jsUrl) {
                             $element.bind('click', function() {
-                                $jsUrl.goToPath($attrs.ngGotopath);
+                                $jsUrl.goToPath($attrs.ngGotopath, $attrs.target);
                             });
                         }]
                 };
@@ -153,7 +153,7 @@ define([
                             for (var name in o.rules) {
                                 var rule = o.rules[name];
                                 if (rule.required === true) {
-                                    var label = $('label[for=' + name + ']');
+                                    var label = $('label[for=\'' + name + '\']');
                                     label.html("* " + label.html());
                                 }
                             }
@@ -169,7 +169,7 @@ define([
                         $(element).closest('.form-group').addClass('has-error');
                     },
                     success: function(element) {
-                        $('input[name=' + element.attr('for') + "]").
+                        $('input[name=\'' + element.attr('for') + "\']").
                                 addClass('valid').closest('.form-group').removeClass('has-error');
                     },
                     errorPlacement: function(error, element) {
@@ -184,9 +184,15 @@ define([
                         if (num_errors > 0) {
                             var els = validator.invalidElements();
                             var el = $(els[0]);
-                            $('label[for=' + el.attr('name') + ']').ScrollTo({
-                                offsetTop: 41
-                            });
+                            var label = $('label[for=\'' + el.attr('name') + '\']');
+                            if (label.length > 0)
+                                $('label[for=\'' + el.attr('name') + '\']').ScrollTo({
+                                    offsetTop: 49
+                                });
+                            else
+                                $(els[0]).ScrollTo({
+                                    offsetTop: 59
+                                });
                         }
                     },
                     submitHandler: function(form) {
@@ -210,8 +216,11 @@ define([
             },
             jsUrl = function($window) {
                 'use strict';
-                this.goToPath = function(url) {
-                    $window.location.href = url;
+                this.goToPath = function(url, target) {
+                    if (target === undefined)
+                        $window.location.href = url;
+                    else
+                        $window.open(url, target);
                 };
             },
             jsTooltip = function($window) {
