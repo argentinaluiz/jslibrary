@@ -25,7 +25,7 @@ define([
             urlBuscarRegistros: null,
             urlExcluirRegistros: null,
             contentMsgExcluir: "<div class='modal fade' id='msgExcluir' tabindex='-1'" +
-                    "role='dialog' aria-labelledby='msgExcluirLabel' aria-hidden='true'>" +
+                    "role='dialog' aria-labelledby='msgExcluirLabel' aria-hidden='true' style='display:none'>" +
                     "<div class='modal-dialog'>" +
                     "<div class='modal-content'>" +
                     "<div class='modal-header'>" +
