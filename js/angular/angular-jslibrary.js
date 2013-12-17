@@ -101,6 +101,10 @@ define([
                             else
                                 val = $attrs.ngInitial || $attrs.value;
                             if (val !== undefined) {
+                                if ($attrs.varType == undefined)
+                                    val = val === "" ? '0' : val;
+                                else
+                                    val = Boolean(parseInt(val));
                                 getter = $parse($attrs.ngModel);
                                 setter = getter.assign;
                                 return setter($scope, val);
