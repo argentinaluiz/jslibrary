@@ -9,129 +9,6 @@ define([
     'bootstrap'
 ], function($) {
     'use strict';
-    var oCache = {
-        iCacheLower: -1
-    };
-
-    function fnSetKey(aoData, sKey, mValue)
-    {
-        for (var i = 0, iLen = aoData.length; i < iLen; i++)
-        {
-            if (aoData[i].name == sKey)
-            {
-                aoData[i].value = mValue;
-            }
-        }
-    }
-
-    function fnGetKey(aoData, sKey)
-    {
-        for (var i = 0, iLen = aoData.length; i < iLen; i++)
-        {
-            if (aoData[i].name == sKey)
-            {
-                return aoData[i].value;
-            }
-        }
-        return null;
-    }
-
-    function fnDataTablesPipeline(sUrl, aoData, fnCallback, oSettings) {
-        var iPipe = 5; /* Ajust the pipe size */
-
-        var bNeedServer = false;
-        var sEcho = fnGetKey(aoData, "sEcho");
-        var iRequestStart = fnGetKey(aoData, "iDisplayStart");
-        var iRequestLength = fnGetKey(aoData, "iDisplayLength");
-        var iRequestEnd = iRequestStart + iRequestLength;
-        oCache.iDisplayStart = iRequestStart;
-
-        /* outside pipeline? */
-        if (oCache.iCacheLower < 0 || iRequestStart < oCache.iCacheLower || iRequestEnd > oCache.iCacheUpper)
-        {
-            bNeedServer = true;
-        }
-
-        /* sorting etc changed? */
-        if (oCache.lastRequest && !bNeedServer)
-        {
-            for (var i = 0, iLen = aoData.length; i < iLen; i++)
-            {
-                if (aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho")
-                {
-                    if (aoData[i].value != oCache.lastRequest[i].value)
-                    {
-                        bNeedServer = true;
-                        break;
-                    }
-                }
-            }
-        }
-
-        /* Store the request for checking next time around */
-        oCache.lastRequest = aoData.slice();
-
-        if (bNeedServer)
-        {
-            if (iRequestStart < oCache.iCacheLower)
-            {
-                iRequestStart = iRequestStart - (iRequestLength * (iPipe - 1));
-                if (iRequestStart < 0)
-                {
-                    iRequestStart = 0;
-                }
-            }
-
-            oCache.iCacheLower = iRequestStart;
-            oCache.iCacheUpper = iRequestStart + (iRequestLength * iPipe);
-            oCache.iDisplayLength = fnGetKey(aoData, "iDisplayLength");
-            fnSetKey(aoData, "iDisplayStart", iRequestStart);
-            fnSetKey(aoData, "iDisplayLength", iRequestLength * iPipe);
-
-            oSettings.jqXHR = $().ajaxLoad({
-                "url": sUrl,
-                "data": aoData,
-                "success": function(json) {
-                    oCache.lastJson = $.extend(true, {}, json);
-
-                    if (oCache.iCacheLower != oCache.iDisplayStart)
-                    {
-                        json.rows.splice(0, oCache.iDisplayStart - oCache.iCacheLower);
-                    }
-                    json.rows.splice(oCache.iDisplayLength, json.rows.length);
-                    $.unblockUI();
-                    fnCallback(json);
-                },
-                "dataType": "json",
-                "cache": false,
-                "message": {
-                    message: 'Carregando...',
-                    showOverlay: false
-                },
-                "error": function(erro, status) {
-                    $.unblockUI();
-                    if (erro.readyState == 0 || erro.status == 0)
-                        return;
-                    if (status == "timeout")
-                        $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
-                    else
-                        $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
-                    fnCallback({"iTotalDisplayRecords": 0,
-                        'iTotalRecords': 0,
-                        'rows': []});
-                }
-            });
-        }
-        else
-        {
-            var json = $.extend(true, {}, oCache.lastJson);
-            json.sEcho = sEcho; /* Update the echo for each response */
-            json.rows.splice(0, iRequestStart - oCache.iCacheLower);
-            json.rows.splice(iRequestLength, json.rows.length);
-            fnCallback(json);
-            return;
-        }
-    }
     var principal = function Principal_List() {
         this.vars = {
             idBtnConsulta: null,
@@ -319,7 +196,35 @@ define([
                         aoData.push(object[i]);
                     }
                 },
-                "fnServerData": fnDataTablesPipeline
+                "fnServerData": function(sUrl, aoData, fnCallback, oSettings) {
+
+                    oSettings.jqXHR = $().ajaxLoad({
+                        "url": sUrl,
+                        "data": aoData,
+                        "success": function(json) {
+                            $.unblockUI();
+                            fnCallback(json);
+                        },
+                        "dataType": "json",
+                        "cache": false,
+                        "message": {
+                            message: 'Carregando...',
+                            showOverlay: false
+                        },
+                        "error": function(erro, status) {
+                            $.unblockUI();
+                            if (erro.readyState == 0 || erro.status == 0)
+                                return;
+                            if (status == "timeout")
+                                $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
+                            else
+                                $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
+                            fnCallback({"iTotalDisplayRecords": 0,
+                                'iTotalRecords': 0,
+                                'rows': []});
+                        }
+                    });
+                }
             });
             var update_size = function() {
                 $($root.vars.idTabela).css({width: $($root.vars.idTabela).parent().width()});
