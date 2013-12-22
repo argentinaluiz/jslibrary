@@ -7,139 +7,140 @@ define([
     'datatables',
     'principal_list_dataTables',
     'bootstrap'
-], function($) {
+], function() {
     'use strict';
-    var oCache = {
-        iCacheLower: -1
-    };
 
-    function fnSetKey(aoData, sKey, mValue)
-    {
-        for (var i = 0, iLen = aoData.length; i < iLen; i++)
-        {
-            if (aoData[i].name == sKey)
-            {
-                aoData[i].value = mValue;
-            }
-        }
-    }
+    var principal = function Principal_List() {
+        var $root = this;
+        this.oCache = {
+            iCacheLower: -1
+        };
 
-    function fnGetKey(aoData, sKey)
-    {
-        for (var i = 0, iLen = aoData.length; i < iLen; i++)
-        {
-            if (aoData[i].name == sKey)
-            {
-                return aoData[i].value;
-            }
-        }
-        return null;
-    }
-
-    function fnDataTablesPipeline(sUrl, aoData, fnCallback, oSettings) {
-        var iPipe = 5; /* Ajust the pipe size */
-
-        var bNeedServer = false;
-        var sEcho = fnGetKey(aoData, "sEcho");
-        var iRequestStart = fnGetKey(aoData, "iDisplayStart");
-        var iRequestLength = fnGetKey(aoData, "iDisplayLength");
-        var iRequestEnd = iRequestStart + iRequestLength;
-        oCache.iDisplayStart = iRequestStart;
-
-        /* outside pipeline? */
-        if (oCache.iCacheLower < 0 || iRequestStart < oCache.iCacheLower || iRequestEnd > oCache.iCacheUpper)
-        {
-            bNeedServer = true;
-        }
-
-        /* sorting etc changed? */
-        if (oCache.lastRequest && !bNeedServer)
+        function fnSetKey(aoData, sKey, mValue)
         {
             for (var i = 0, iLen = aoData.length; i < iLen; i++)
             {
-                if (aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho")
+                if (aoData[i].name == sKey)
                 {
-                    if (aoData[i].value != oCache.lastRequest[i].value)
-                    {
-                        bNeedServer = true;
-                        break;
-                    }
+                    aoData[i].value = mValue;
                 }
             }
         }
 
-        /* Store the request for checking next time around */
-        oCache.lastRequest = aoData.slice();
-
-        if (bNeedServer)
+        function fnGetKey(aoData, sKey)
         {
-            if (iRequestStart < oCache.iCacheLower)
+            for (var i = 0, iLen = aoData.length; i < iLen; i++)
             {
-                iRequestStart = iRequestStart - (iRequestLength * (iPipe - 1));
-                if (iRequestStart < 0)
+                if (aoData[i].name == sKey)
                 {
-                    iRequestStart = 0;
+                    return aoData[i].value;
+                }
+            }
+            return null;
+        }
+
+        this.fnDataTablesPipeline = function(sUrl, aoData, fnCallback, oSettings) {
+            var iPipe = 5; /* Ajust the pipe size */
+
+            var bNeedServer = false;
+            var sEcho = fnGetKey(aoData, "sEcho");
+            var iRequestStart = fnGetKey(aoData, "iDisplayStart");
+            var iRequestLength = fnGetKey(aoData, "iDisplayLength");
+            var iRequestEnd = iRequestStart + iRequestLength;
+            $root.oCache.iDisplayStart = iRequestStart;
+
+            /* outside pipeline? */
+            if ($root.oCache.iCacheLower < 0 || iRequestStart < $root.oCache.iCacheLower || iRequestEnd > $root.oCache.iCacheUpper)
+            {
+                bNeedServer = true;
+            }
+
+            /* sorting etc changed? */
+            if ($root.oCache.lastRequest && !bNeedServer)
+            {
+                for (var i = 0, iLen = aoData.length; i < iLen; i++)
+                {
+                    if (aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho")
+                    {
+                        if (aoData[i].value != $root.oCache.lastRequest[i].value)
+                        {
+                            bNeedServer = true;
+                            break;
+                        }
+                    }
                 }
             }
 
-            oCache.iCacheLower = iRequestStart;
-            oCache.iCacheUpper = iRequestStart + (iRequestLength * iPipe);
-            oCache.iDisplayLength = fnGetKey(aoData, "iDisplayLength");
-            fnSetKey(aoData, "iDisplayStart", iRequestStart);
-            fnSetKey(aoData, "iDisplayLength", iRequestLength * iPipe);
+            /* Store the request for checking next time around */
+            $root.oCache.lastRequest = aoData.slice();
 
-            oSettings.jqXHR = $().ajaxLoad({
-                "url": sUrl,
-                "data": aoData,
-                "success": function(json) {
-                    oCache.lastJson = $.extend(true, {}, json);
-
-                    if (oCache.iCacheLower != oCache.iDisplayStart)
+            if (bNeedServer)
+            {
+                if (iRequestStart < $root.oCache.iCacheLower)
+                {
+                    iRequestStart = iRequestStart - (iRequestLength * (iPipe - 1));
+                    if (iRequestStart < 0)
                     {
-                        json.rows.splice(0, oCache.iDisplayStart - oCache.iCacheLower);
+                        iRequestStart = 0;
                     }
-                    json.rows.splice(oCache.iDisplayLength, json.rows.length);
-                    $.unblockUI();
-                    fnCallback(json);
-                },
-                "dataType": "json",
-                "cache": false,
-                "message": {
-                    message: 'Carregando...',
-                    showOverlay: false
-                },
-                "error": function(erro, status) {
-                    $.unblockUI();
-                    if (erro.readyState == 0 || erro.status == 0)
-                        return;
-                    if (status == "timeout")
-                        $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
-                    else
-                        $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
-                    fnCallback({"iTotalDisplayRecords": 0,
-                        'iTotalRecords': 0,
-                        'rows': []});
                 }
-            });
-        }
-        else
-        {
-            var json = $.extend(true, {}, oCache.lastJson);
-            json.sEcho = sEcho; /* Update the echo for each response */
-            json.rows.splice(0, iRequestStart - oCache.iCacheLower);
-            json.rows.splice(iRequestLength, json.rows.length);
-            fnCallback(json);
+
+                $root.oCache.iCacheLower = iRequestStart;
+                $root.oCache.iCacheUpper = iRequestStart + (iRequestLength * iPipe);
+                $root.oCache.iDisplayLength = fnGetKey(aoData, "iDisplayLength");
+                fnSetKey(aoData, "iDisplayStart", iRequestStart);
+                fnSetKey(aoData, "iDisplayLength", iRequestLength * iPipe);
+
+                oSettings.jqXHR = $().ajaxLoad({
+                    "url": sUrl,
+                    "data": aoData,
+                    "success": function(json) {
+                        $root.oCache.lastJson = $.extend(true, {}, json);
+
+                        if ($root.oCache.iCacheLower != $root.oCache.iDisplayStart)
+                        {
+                            json.rows.splice(0, $root.oCache.iDisplayStart - $root.oCache.iCacheLower);
+                        }
+                        json.rows.splice($root.oCache.iDisplayLength, json.rows.length);
+                        $.unblockUI();
+                        fnCallback(json);
+                    },
+                    "dataType": "json",
+                    "cache": false,
+                    "message": {
+                        message: 'Carregando...',
+                        showOverlay: false
+                    },
+                    "error": function(erro, status) {
+                        $.unblockUI();
+                        if (erro.readyState == 0 || erro.status == 0)
+                            return;
+                        if (status == "timeout")
+                            $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
+                        else
+                            $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
+                    }
+                });
+            }
+            else
+            {
+                var json = $.extend(true, {}, $root.oCache.lastJson);
+                json.sEcho = sEcho; /* Update the echo for each response */
+                json.rows.splice(0, iRequestStart - $root.oCache.iCacheLower);
+                json.rows.splice(iRequestLength, json.rows.length);
+                fnCallback(json);
+            }
+            $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
+            $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
+                    $($root.vars.idTabela + "_wrapper .row").height()) + "px");
             return;
-        }
-    }
-    var principal = function Principal_List() {
+        };
         this.vars = {
             idBtnConsulta: null,
             idBtnExcluir: null,
             idTooltipMessage: null,
             idTabela: null,
             idOpcoesConsulta: null,
-            idLabelBusca: null,
             idHeadCheckTable: null,
             "aoColumns": [],
             idMsgExcluir: "#msgExcluir",
@@ -168,10 +169,8 @@ define([
         };
 
         this.alterarOpcoesConsulta = null;
-        this.mostrarLabelBusca = null;
         this.getOpcoesConsulta = null;
         this.onsubmit = function(form) {
-            var $root = this;
             $(form).eq(0).submit(function(event) {
                 $($root.vars.idTabela).dataTable().fnDraw();
                 event.preventDefault();
@@ -234,8 +233,19 @@ define([
                     data: dados,
                     message: "Excluido...",
                     success: function(Dados) {
+                        $.each(dados[$root.vars.constCodigos], function(i, codigo) {
+                            $.each($root.oCache.lastJson.rows, function(y, item) {
+                                if ($root.oCache.lastJson.rows.hasOwnProperty(y))
+                                    if (item.codigo == codigo) {
+                                        $root.oCache.lastJson.rows.splice(y, 1);
+                                        $root.oCache.lastJson.iTotalDisplayRecords--;
+                                        $root.oCache.lastJson.iTotalRecords--;
+                                    }
+                            });
+                        });
                         $.unblockUI();
                         $($root.vars.idTabela).dataTable().fnDraw(true);
+
                     },
                     error: function(erro, status) {
                         if (erro.readyState == 0 || erro.status == 0)
@@ -273,35 +283,30 @@ define([
             var $root = this;
 
             $($root.vars.idTabela).dataTable({
-                //"sDom": "<'row'<'span6'l><'span6'f>r>t<'row'<'span6'i><'span6'p>>",
-                //"sDom": "<'row-fluid'<'span6'><'span6'f>r>t<'row-fluid'<'span6'il><'span6'p>>",
-                //"sDom": "<'row'r>t<'row'<'col-md-6'il><'col-md-6'p>>",
                 "sPaginationType": "bootstrap",
-                //"sStripeOdd": "alert alert-info",
-                //"sStripeEven": "even",
                 "bScrollCollapse": true,
+                "sScrollY": (document.documentElement.clientHeight - $("#tabela").offset().top - 50) + "px",
                 "bFilter": false,
                 "bProcessing": false,
                 "bServerSide": true,
                 "sAjaxSource": $root.vars.urlBuscarRegistros,
                 "sAjaxDataProp": "rows",
                 "iDisplayLength": 25,
+                "asStripeClasses": ['', ''],
                 "oLanguage": {
-                    "sLengthMenu": '<select class="pagesize">' +
+                    "sLengthMenu": '<select class="pagesize form-control">' +
                             '<option value="10">10</option>' +
                             '<option value="25">25</option>' +
                             '<option value="35">35</option>' +
                             '<option value="50">50</option>' +
                             '</select>',
                     "sProcessing": "Carregando...",
-                    "sInfo": "_START_ - _END_ de <b>(_TOTAL_)</b> registros",
+                    "sInfo": "<h4><span class='label label-primary'>_START_-_END_ de <b>(_TOTAL_)</b></span></h4>",
                     "sEmptyTable": "Nenhum registro encontrado",
-                    "sInfoEmpty": "0 registros",
+                    "sInfoEmpty": "<h4><span class='label label-default'>0 registros</span></h4>",
                     "oPaginate": {
-                        "sFirst": "<<",
-                        "sLast": ">>",
-                        "sNext": ">",
-                        "sPrevious": "<"
+                        "sNext": '<span class="glyphicon glyphicon-chevron-right"></span>',
+                        "sPrevious": '<span class="glyphicon glyphicon-chevron-left"></span>'
                     }
                 },
                 "aoColumnDefs": [
@@ -309,7 +314,6 @@ define([
                 ],
                 "aoColumns": $root.vars.aoColumns,
                 "fnRowCallback": function(nRow, aData, iDisplayIndex) {
-                    $($root.vars.idLabelBusca).html($root.mostrarLabelBusca());
                     nRow = $root.popularTabela(aData, nRow);
                     return nRow;
                 },
@@ -319,11 +323,20 @@ define([
                         aoData.push(object[i]);
                     }
                 },
-                "fnServerData": fnDataTablesPipeline
+                "fnInitComplete": function(oSettings, json) {
+                    $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
+                    $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
+                            $($root.vars.idTabela + "_wrapper .row").height()) + "px");
+                },
+                "fnServerData": $root.fnDataTablesPipeline
             });
+            $('body').css('overflow-y', 'hidden');
+            $('.panel-search').html($('[id="panel-search.html"]').html());
+            $('[id="panel-search.html"]').remove();
             var update_size = function() {
-                $($root.vars.idTabela).css({width: $($root.vars.idTabela).parent().width()});
                 $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
+                $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
+                        $($root.vars.idTabela + "_wrapper .row").height()) + "px");
             };
 
             $(window).resize(function() {

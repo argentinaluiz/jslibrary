@@ -1,11 +1,8 @@
 define(['jquery', 'datatables'], function($) {
     'use strict';
-    /*$.extend($.fn.dataTableExt.oStdClasses, {
-     sProcessing: "label label-info dataTables_processing"
-     });*/
     /* Set the defaults for DataTables initialisation */
     $.extend(true, $.fn.dataTable.defaults, {
-        "sDom": "<'row'<'col-xs-5'l><'col-xs-7'fp>r>t<'row'<'col-xs-5'i><'col-xs-7'p>>",
+        "sDom": "<'row'<'col-xs-8 panel-search'><'col-xs-4'lpi>r>t",
         "sPaginationType": "bootstrap",
         "oLanguage": {
             "sLengthMenu": "_MENU_ records per page"
@@ -48,18 +45,16 @@ define(['jquery', 'datatables'], function($) {
                 };
 
                 $(nPaging).append(
-                        '<ul class="pagination">' +
-                        '<li class="first disabled"><a href="#">' + oLang.sFirst + '</a></li>' +
-                        '<li class="prev disabled"><a href="#">' + oLang.sPrevious + '</a></li>' +
-                        '<li class="next disabled"><a href="#">' + oLang.sNext + '</a></li>' +
-                        '<li class="last disabled"><a href="#">' + oLang.sLast + '</a></li>' +
+                        '<ul class="pager" style="margin: 2px">' +
+                        //'<li class="first disabled"><a href="#">' + oLang.sFirst + '</a></li>' +
+                        '<li class="prev disabled"><a href="javascript:void(0)">' + oLang.sPrevious + '</a></li>' +
+                        '<li class="next disabled"><a href="javascript:void(0)">' + oLang.sNext + '</a></li>' +
+                        //'<li class="last disabled"><a href="#">' + oLang.sLast + '</a></li>' +
                         '</ul>'
                         );
                 var els = $('a', nPaging);
-                $(els[0]).bind('click.DT', {action: "first"}, fnClickHandler);
-                $(els[1]).bind('click.DT', {action: "previous"}, fnClickHandler);
-                $(els[2]).bind('click.DT', {action: "next"}, fnClickHandler);
-                $(els[3]).bind('click.DT', {action: "last"}, fnClickHandler);
+                $(els[0]).bind('click.DT', {action: "previous"}, fnClickHandler);
+                $(els[1]).bind('click.DT', {action: "next"}, fnClickHandler);
             },
             "fnUpdate": function(oSettings, fnDraw) {
                 var iListLength = 5;
@@ -87,33 +82,27 @@ define(['jquery', 'datatables'], function($) {
                     $('li:gt(1)', an[i]).filter(':not(.next,.last)').remove();
 
                     // Add the new list items and their event handlers
-                    for (j = iStart; j <= iEnd; j++) {
-                        sClass = (j == oPaging.iPage + 1) ? 'class="active"' : '';
-                        $('<li ' + sClass + '><a href="#">' + j + '</a></li>')
-                                .insertBefore($('li.next', an[i])[0])
-                                .bind('click', function(e) {
-                                    e.preventDefault();
-                                    oSettings._iDisplayStart = (parseInt($('a', this).text(), 10) - 1) * oPaging.iLength;
-                                    fnDraw(oSettings);
-                                });
-                    }
+                    /*for (j = iStart; j <= iEnd; j++) {
+                     sClass = (j == oPaging.iPage + 1) ? 'class="active"' : '';
+                     $('<li ' + sClass + '><a href="#">' + j + '</a></li>')
+                     .insertBefore($('li.next', an[i])[0])
+                     .bind('click', function(e) {
+                     e.preventDefault();
+                     oSettings._iDisplayStart = (parseInt($('a', this).text(), 10) - 1) * oPaging.iLength;
+                     fnDraw(oSettings);
+                     });
+                     }*/
 
                     // Add / remove disabled classes from the static elements
-                    if (oPaging.iPage === 0) {
+                    if (oPaging.iPage === 0)
                         $('li:eq(0)', an[i]).addClass('disabled');
-                        $('li:eq(1)', an[i]).addClass('disabled');
-                    } else {
+                    else
                         $('li:eq(0)', an[i]).removeClass('disabled');
-                        $('li:eq(1)', an[i]).removeClass('disabled');
-                    }
 
-                    if (oPaging.iPage === oPaging.iTotalPages - 1 || oPaging.iTotalPages === 0) {
+                    if (oPaging.iPage === oPaging.iTotalPages - 1 || oPaging.iTotalPages === 0)
                         $('li:eq(-1)', an[i]).addClass('disabled');
-                        $('li:eq(-2)', an[i]).addClass('disabled');
-                    } else {
+                    else
                         $('li:eq(-1)', an[i]).removeClass('disabled');
-                        $('li:eq(-2)', an[i]).removeClass('disabled');
-                    }
                 }
             }
         }
