@@ -1,6 +1,10 @@
 body {
-    padding-top: 60px;
-    padding-bottom: 40px;
+    padding-top: 50px;
+    /*padding-bottom: 40px;*/
+    height: 100%;
+}
+html{
+    height: 100%;
 }
 
 .help-block{
@@ -26,20 +30,17 @@ div.container a.brand {
     text-decoration:#000;
 }
 
-ul[id=panelBusca]{
-    margin-bottom: -10px;
+.dataTables_scrollHeadInner table{
+    max-width: inherit !important;
 }
 
-#tabela {
-    border-top: 1px solid #DDDDDD;
-    line-height: 1.42857;
-    padding: 8px;
-    vertical-align: top;
-    border-bottom: 1px solid #DDDDDD;
+.dataTables_scroll{
+    border-top: 1px solid #E5E5E5;
 }
 
 .dividerButton{
     margin-top: 10px;
+    margin-bottom: 5px;
     display: inline-block;
 }
 
@@ -47,4 +48,9 @@ ul[id=panelBusca]{
     display: block;
     height: 0;
     overflow: visible;
+}
+
+.title-search{
+    margin-top:10px;
+    margin-bottom: 10px;
 }

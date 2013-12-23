@@ -46,10 +46,8 @@ define(['jquery', 'datatables'], function($) {
 
                 $(nPaging).append(
                         '<ul class="pager" style="margin: 2px">' +
-                        //'<li class="first disabled"><a href="#">' + oLang.sFirst + '</a></li>' +
                         '<li class="prev disabled"><a href="javascript:void(0)">' + oLang.sPrevious + '</a></li>' +
                         '<li class="next disabled"><a href="javascript:void(0)">' + oLang.sNext + '</a></li>' +
-                        //'<li class="last disabled"><a href="#">' + oLang.sLast + '</a></li>' +
                         '</ul>'
                         );
                 var els = $('a', nPaging);
@@ -80,18 +78,6 @@ define(['jquery', 'datatables'], function($) {
                 for (i = 0, ien = an.length; i < ien; i++) {
                     // Remove the middle elements
                     $('li:gt(1)', an[i]).filter(':not(.next,.last)').remove();
-
-                    // Add the new list items and their event handlers
-                    /*for (j = iStart; j <= iEnd; j++) {
-                     sClass = (j == oPaging.iPage + 1) ? 'class="active"' : '';
-                     $('<li ' + sClass + '><a href="#">' + j + '</a></li>')
-                     .insertBefore($('li.next', an[i])[0])
-                     .bind('click', function(e) {
-                     e.preventDefault();
-                     oSettings._iDisplayStart = (parseInt($('a', this).text(), 10) - 1) * oPaging.iLength;
-                     fnDraw(oSettings);
-                     });
-                     }*/
 
                     // Add / remove disabled classes from the static elements
                     if (oPaging.iPage === 0)

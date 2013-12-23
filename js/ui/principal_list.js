@@ -19,23 +19,15 @@ define([
         function fnSetKey(aoData, sKey, mValue)
         {
             for (var i = 0, iLen = aoData.length; i < iLen; i++)
-            {
                 if (aoData[i].name == sKey)
-                {
                     aoData[i].value = mValue;
-                }
-            }
         }
 
         function fnGetKey(aoData, sKey)
         {
             for (var i = 0, iLen = aoData.length; i < iLen; i++)
-            {
                 if (aoData[i].name == sKey)
-                {
                     return aoData[i].value;
-                }
-            }
             return null;
         }
 
@@ -51,25 +43,17 @@ define([
 
             /* outside pipeline? */
             if ($root.oCache.iCacheLower < 0 || iRequestStart < $root.oCache.iCacheLower || iRequestEnd > $root.oCache.iCacheUpper)
-            {
                 bNeedServer = true;
-            }
 
             /* sorting etc changed? */
             if ($root.oCache.lastRequest && !bNeedServer)
-            {
                 for (var i = 0, iLen = aoData.length; i < iLen; i++)
-                {
                     if (aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho")
-                    {
                         if (aoData[i].value != $root.oCache.lastRequest[i].value)
                         {
                             bNeedServer = true;
                             break;
                         }
-                    }
-                }
-            }
 
             /* Store the request for checking next time around */
             $root.oCache.lastRequest = aoData.slice();
@@ -80,9 +64,7 @@ define([
                 {
                     iRequestStart = iRequestStart - (iRequestLength * (iPipe - 1));
                     if (iRequestStart < 0)
-                    {
                         iRequestStart = 0;
-                    }
                 }
 
                 $root.oCache.iCacheLower = iRequestStart;
@@ -104,6 +86,9 @@ define([
                         json.rows.splice($root.oCache.iDisplayLength, json.rows.length);
                         $.unblockUI();
                         fnCallback(json);
+                        $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
+                        $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
+                                $($root.vars.idTabela + "_wrapper .row").height()) + "px");
                     },
                     "dataType": "json",
                     "cache": false,
@@ -129,10 +114,13 @@ define([
                 json.rows.splice(0, iRequestStart - $root.oCache.iCacheLower);
                 json.rows.splice(iRequestLength, json.rows.length);
                 fnCallback(json);
+                $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
+                $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
+                        $($root.vars.idTabela + "_wrapper .row").height()) + "px");
+                $(".dataTables_scrollBody").animate({
+                    scrollTop: 0
+                }, 0);
             }
-            $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
-            $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
-                    $($root.vars.idTabela + "_wrapper .row").height()) + "px");
             return;
         };
         this.vars = {
@@ -349,8 +337,6 @@ define([
         initialize: function(opcoes) {
             var $root = this;
             $.extend(this.vars, opcoes);
-            if (this.alterarOpcoesConsulta != null)
-                $(this.vars.idOpcoesConsulta).change(this.alterarOpcoesConsulta);
             this.prepararTabela();
             if (this.vars.idHeadCheckTable != null)
                 $(this.vars.idHeadCheckTable).click(function(e) {
@@ -363,6 +349,8 @@ define([
                             this.checked = false;
                         });
                 });
+            if (this.alterarOpcoesConsulta != null)
+                $(this.vars.idOpcoesConsulta).change(this.alterarOpcoesConsulta);
 
             this.acaoConsultar();
             this.acaoExcluir();
