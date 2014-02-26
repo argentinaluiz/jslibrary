@@ -333,6 +333,9 @@ define([
                     update_size();
                 }, 100);
             });
+            $('button[class="close"][aria-hidden="true"][data-dismiss="alert"]').on('click', function() {
+                $(window).resize();
+            });
         },
         initialize: function(opcoes) {
             var $root = this;
