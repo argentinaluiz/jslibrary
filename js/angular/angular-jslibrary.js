@@ -53,6 +53,7 @@ define([
                                             });
                                     });
                                     $window.setTimeout(function() {
+                                        $('.modal .modal-footer').find('button').eq(0).focus();
                                         $('.modal').draggable({
                                             cursor: 'move'
                                         });
@@ -208,6 +209,7 @@ define([
                                         form.submit();
                                 });
                                 $window.setTimeout(function() {
+                                    $('.modal .modal-footer').find('button').eq(0).focus();
                                     $('.modal').draggable({
                                         cursor: 'move'
                                     });
