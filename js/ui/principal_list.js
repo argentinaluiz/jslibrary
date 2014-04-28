@@ -3,6 +3,7 @@ define([
     'jquery.ajax_load',
     'jquery.ui',
     'jquery.msg',
+    'jquery.string',
     'blockui',
     'datatables',
     'principal_list_dataTables',
@@ -10,132 +11,118 @@ define([
 ], function() {
     'use strict';
 
-    var principal = function Principal_List() {
+    var principal = function() {
         var $root = this;
-        this.oCache = {
-            iCacheLower: -1
-        };
+        this.cacheLastJson = null;
+        $.fn.dataTable.pipeline = function(opts) {
+            var conf = $.extend({
+                pages: 5, // number of pages to cache
+                url: '' // script url
+            }, opts);
 
-        function fnSetKey(aoData, sKey, mValue)
-        {
-            for (var i = 0, iLen = aoData.length; i < iLen; i++)
-                if (aoData[i].name == sKey)
-                    aoData[i].value = mValue;
-        }
+// Private variables for storing the cache
+            var cacheLower = -1;
+            var cacheUpper = null;
+            var cacheLastRequest = null;
+            //var cacheLastJson = null;
 
-        function fnGetKey(aoData, sKey)
-        {
-            for (var i = 0, iLen = aoData.length; i < iLen; i++)
-                if (aoData[i].name == sKey)
-                    return aoData[i].value;
-            return null;
-        }
+            return function(request, drawCallback, settings) {
+                var ajax = false;
+                var requestStart = request.start;
+                var requestLength = request.length;
+                var requestEnd = requestStart + requestLength;
 
-        this.fnDataTablesPipeline = function(sUrl, aoData, fnCallback, oSettings) {
-            var iPipe = 5; /* Ajust the pipe size */
-
-            var bNeedServer = false;
-            var sEcho = fnGetKey(aoData, "sEcho");
-            var iRequestStart = fnGetKey(aoData, "iDisplayStart");
-            var iRequestLength = fnGetKey(aoData, "iDisplayLength");
-            var iRequestEnd = iRequestStart + iRequestLength;
-            $root.oCache.iDisplayStart = iRequestStart;
-
-            /* outside pipeline? */
-            if ($root.oCache.iCacheLower < 0 || iRequestStart < $root.oCache.iCacheLower || iRequestEnd > $root.oCache.iCacheUpper)
-                bNeedServer = true;
-
-            /* sorting etc changed? */
-            if ($root.oCache.lastRequest && !bNeedServer)
-                for (var i = 0, iLen = aoData.length; i < iLen; i++)
-                    if (aoData[i].name != "iDisplayStart" && aoData[i].name != "iDisplayLength" && aoData[i].name != "sEcho")
-                        if (aoData[i].value != $root.oCache.lastRequest[i].value)
-                        {
-                            bNeedServer = true;
-                            break;
-                        }
-
-            /* Store the request for checking next time around */
-            $root.oCache.lastRequest = aoData.slice();
-
-            if (bNeedServer)
-            {
-                if (iRequestStart < $root.oCache.iCacheLower)
-                {
-                    iRequestStart = iRequestStart - (iRequestLength * (iPipe - 1));
-                    if (iRequestStart < 0)
-                        iRequestStart = 0;
+                if (cacheLower < 0 || requestStart < cacheLower || requestEnd > cacheUpper) {
+// outside cached data - need to make a request
+                    ajax = true;
+                }
+                else if (JSON.stringify(request.order) !== JSON.stringify(cacheLastRequest.order) ||
+                        JSON.stringify(request.columns) !== JSON.stringify(cacheLastRequest.columns) ||
+                        JSON.stringify(request.search) !== JSON.stringify(cacheLastRequest.search)
+                        ) {
+// properties changed (ordering, columns, searching)
+                    ajax = true;
                 }
 
-                $root.oCache.iCacheLower = iRequestStart;
-                $root.oCache.iCacheUpper = iRequestStart + (iRequestLength * iPipe);
-                $root.oCache.iDisplayLength = fnGetKey(aoData, "iDisplayLength");
-                fnSetKey(aoData, "iDisplayStart", iRequestStart);
-                fnSetKey(aoData, "iDisplayLength", iRequestLength * iPipe);
+// Store the request for checking next time around
+                cacheLastRequest = $.extend(true, {}, request);
 
-                oSettings.jqXHR = $().ajaxLoad({
-                    "url": sUrl,
-                    "data": aoData,
-                    "success": function(json) {
-                        $root.oCache.lastJson = $.extend(true, {}, json);
+                if (ajax) {
+// Need data from the server
+                    if (requestStart < cacheLower) {
+                        requestStart = requestStart - (requestLength * (conf.pages - 1));
 
-                        if ($root.oCache.iCacheLower != $root.oCache.iDisplayStart)
-                        {
-                            json.rows.splice(0, $root.oCache.iDisplayStart - $root.oCache.iCacheLower);
+                        if (requestStart < 0) {
+                            requestStart = 0;
                         }
-                        json.rows.splice($root.oCache.iDisplayLength, json.rows.length);
-                        $.unblockUI();
-                        fnCallback(json);
-                        $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
-                        $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
-                                $($root.vars.idTabela + "_wrapper .row").height()) + "px");
-                    },
-                    "dataType": "json",
-                    "cache": false,
-                    "message": {
-                        message: 'Carregando...',
-                        showOverlay: false
-                    },
-                    "error": function(erro, status) {
-                        $.unblockUI();
-                        if (erro.readyState == 0 || erro.status == 0)
-                            return;
-                        if (status == "timeout")
-                            $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
-                        else
-                            $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
                     }
-                });
-            }
-            else
-            {
-                var json = $.extend(true, {}, $root.oCache.lastJson);
-                json.sEcho = sEcho; /* Update the echo for each response */
-                json.rows.splice(0, iRequestStart - $root.oCache.iCacheLower);
-                json.rows.splice(iRequestLength, json.rows.length);
-                fnCallback(json);
-                $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
-                $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
-                        $($root.vars.idTabela + "_wrapper .row").height()) + "px");
-                $(".dataTables_scrollBody").animate({
-                    scrollTop: 0
-                }, 0);
-            }
-            return;
+
+                    cacheLower = requestStart;
+                    cacheUpper = requestStart + (requestLength * conf.pages);
+
+                    request.start = requestStart;
+                    request.length = requestLength * conf.pages;
+
+                    settings.jqXHR = $().ajaxLoad({
+                        "url": conf.url,
+                        "data": request,
+                        "success": function(json) {
+                            $root.cacheLastJson = $.extend(true, {}, json);
+
+                            if (cacheLower != requestStart) {
+                                json.data.splice(0, requestStart - cacheLower);
+                            }
+                            json.data.splice(requestLength, json.data.length);
+                            $.unblockUI();
+                            drawCallback(json);
+                            $root.updateSize();
+                        },
+                        "dataType": "json",
+                        "cache": false,
+                        "message": {
+                            message: 'Carregando...',
+                            showOverlay: false
+                        },
+                        "error": function(erro, status) {
+                            $.unblockUI();
+                            if (erro.readyState == 0 || erro.status == 0)
+                                return;
+                            if (status == "timeout")
+                                $().msgError("<strong>Por Favor, Tente Novamente!</strong>");
+                            else
+                                $($root.vars.idTooltipMessage).showMessageErr(erro.responseText);
+                        }
+                    });
+                }
+                else {
+                    var json = $.extend(true, {}, $root.cacheLastJson);
+                    json.draw = request.draw; // Update the echo for each response
+                    json.data.splice(0, requestStart - cacheLower);
+                    json.data.splice(requestLength, json.data.length);
+
+                    drawCallback(json);
+                    $root.updateSize();
+                    $(".dataTables_scrollBody").animate({
+                        scrollTop: 0
+                    }, 0);
+                }
+            };
         };
         this.vars = {
             idBtnConsulta: null,
             idBtnExcluir: null,
+            idBtnClearFilters: null,
             idTooltipMessage: null,
             idTabela: null,
-            idOpcoesConsulta: null,
-            idHeadCheckTable: null,
-            "aoColumns": [],
+            idHeadCheckTable: 'tblHeadCheck',
             idMsgExcluir: "#msgExcluir",
             idTdCheckTable: "tblTdCheck",
+            dataTables: {},
+            identifier: null,
             constCodigos: "codigos",
             urlBuscarRegistros: null,
             urlExcluirRegistros: null,
+            urlEditar: null,
             contentMsgExcluir: "<div class='modal fade' id='msgExcluir' tabindex='-1'" +
                     "role='dialog' aria-labelledby='msgExcluirLabel' aria-hidden='true' style='display:none'>" +
                     "<div class='modal-dialog'>" +
@@ -156,18 +143,18 @@ define([
                     "</div>"
         };
 
-        this.alterarOpcoesConsulta = null;
-        this.getOpcoesConsulta = null;
-        this.onsubmit = function(form) {
-            $(form).eq(0).submit(function(event) {
-                $($root.vars.idTabela).dataTable().fnDraw();
-                event.preventDefault();
-            });
+        this.updateSize = function() {
+            $(this.vars.idTabela).DataTable().columns.adjust();
+            $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $(".dataTables_scrollBody").offset().top) + "px");
         };
-
     };
     principal.prototype = {
-        popularTabela: null,
+        generateCell: function(td, cellData, rowData, row, col) {
+            var $root = this;
+            var content = $root.vars.urlEditar + '/' + rowData[$root.vars.dataTables.identifier];
+            content = $root.formatarColunaClick(content, cellData).children().unwrap();
+            $(td).html(content);
+        },
         getCheckbox_Checked: function() {
             return $("input:checkbox:checked[name=" + this.vars.idTdCheckTable + "]").parent();
         },
@@ -204,6 +191,13 @@ define([
             td.append(a);
             return td;
         },
+        acaoLimparFiltros: function() {
+            var $root = this;
+            $($root.vars.idBtnClearFilters).click(function() {
+                var tabela = $($root.vars.idTabela).DataTable();
+                tabela.fnFilterClear(tabela.settings()[0]);
+            });
+        },
         acaoExcluir: function() {
             var $root = this;
             $('body').append(this.vars.contentMsgExcluir);
@@ -222,17 +216,17 @@ define([
                     message: "Excluido...",
                     success: function(Dados) {
                         $.each(dados[$root.vars.constCodigos], function(i, codigo) {
-                            $.each($root.oCache.lastJson.rows, function(y, item) {
-                                if ($root.oCache.lastJson.rows.hasOwnProperty(y))
+                            $.each($root.cacheLastJson.data, function(y, item) {
+                                if ($root.cacheLastJson.data.hasOwnProperty(y))
                                     if (item.codigo == codigo) {
-                                        $root.oCache.lastJson.rows.splice(y, 1);
-                                        $root.oCache.lastJson.iTotalDisplayRecords--;
-                                        $root.oCache.lastJson.iTotalRecords--;
+                                        $root.cacheLastJson.data.splice(y, 1);
+                                        $root.cacheLastJson.recordsFiltered--;
+                                        $root.cacheLastJson.recordsTotal--;
                                     }
                             });
                         });
                         $.unblockUI();
-                        $($root.vars.idTabela).dataTable().fnDraw(true);
+                        $($root.vars.idTabela).DataTable().draw(true);
 
                     },
                     error: function(erro, status) {
@@ -264,77 +258,103 @@ define([
         acaoConsultar: function() {
             var $root = this;
             $(this.vars.idBtnConsulta).click(function(event) {
-                $($root.vars.idTabela).dataTable().fnDraw();
+                $root.aplicarFiltros().draw();
             });
         },
+        onsubmit: function(form) {
+            $(form).eq(0).submit(function(event) {
+                event.preventDefault();
+            });
+        },
+        aplicarFiltros: function() {
+            var tabela = $(this.vars.idTabela).DataTable();
+            $(".dataTables_filter_column").each(function() {
+                tabela
+                        .column($(this).parent().index() + ':visible')
+                        .search(this.value);
+            });
+            $(this.vars.idTabela).DataTable().
+                    search($(this.vars.idTabela + '_filter input[type=search]').val());
+            return tabela;
+        },
         prepararTabela: function() {
-            var $root = this;
+            var $root = this,
+                    dataTableConfig = {
+                        orderCellsTop: true,
+                        scrollCollapse: true,
+                        scrollY: (document.documentElement.clientHeight - $($root.vars.idTabela).offset().top - 50) + "px",
+                        searching: true,
+                        processing: false,
+                        serverSide: true,
+                        pageLength: 25,
+                        stripeClasses: ['', ''],
+                        language: {
+                            lengthMenu: '_MENU_',
+                            processing: "Carregando...",
+                            info: "<h4><span class='label label-primary'>_START_-_END_ de <b>(_TOTAL_)</b> - _MAX_</span></h4>",
+                            infoFiltered: "",
+                            emptyTable: "Nenhum registro encontrado",
+                            zeroRecords: "Nenhum registro encontrado",
+                            infoEmpty: "<h4><span class='label label-default'>0 registros</span></h4>",
+                            search: "<div class='input-group'><span class='input-group-addon'><label>Por Todos:</label></span>" +
+                                    "_INPUT_" +
+                                    "<span class='input-group-btn'></span></div> ",
+                            paginate: {
+                                next: '<span class="glyphicon glyphicon-chevron-right"></span>',
+                                previous: '<span class="glyphicon glyphicon-chevron-left"></span>'
+                            }
+                        },
+                        ajax: $.fn.dataTable.pipeline({
+                            url: $root.vars.urlBuscarRegistros
+                        }),
+                        order: [],
+                        columnDefs: [
+                            {
+                                data: null,
+                                title: '<input id="' + $root.vars.idHeadCheckTable + '" type="checkbox"/>',
+                                searchable: false,
+                                orderable: false,
+                                aTargets: [0]
+                            }
+                        ],
+                        initComplete: function(oSettings, json) {
+                            $root.updateSize();
+                            this.fnSetFilteringPressEnter(oSettings);
+                        }
+                    };
 
-            $($root.vars.idTabela).dataTable({
-                "sPaginationType": "bootstrap",
-                "bScrollCollapse": true,
-                "sScrollY": (document.documentElement.clientHeight - $("#tabela").offset().top - 50) + "px",
-                "bFilter": false,
-                "bProcessing": false,
-                "bServerSide": true,
-                "sAjaxSource": $root.vars.urlBuscarRegistros,
-                "sAjaxDataProp": "rows",
-                "iDisplayLength": 25,
-                "asStripeClasses": ['', ''],
-                "oLanguage": {
-                    "sLengthMenu": '<select class="pagesize form-control">' +
-                            '<option value="10">10</option>' +
-                            '<option value="25">25</option>' +
-                            '<option value="35">35</option>' +
-                            '<option value="50">50</option>' +
-                            '</select>',
-                    "sProcessing": "Carregando...",
-                    "sInfo": "<h4><span class='label label-primary'>_START_-_END_ de <b>(_TOTAL_)</b></span></h4>",
-                    "sEmptyTable": "Nenhum registro encontrado",
-                    "sInfoEmpty": "<h4><span class='label label-default'>0 registros</span></h4>",
-                    "oPaginate": {
-                        "sNext": '<span class="glyphicon glyphicon-chevron-right"></span>',
-                        "sPrevious": '<span class="glyphicon glyphicon-chevron-left"></span>'
-                    }
-                },
-                "aoColumnDefs": [
-                    {'bSortable': false, 'aTargets': [0]}
-                ],
-                "aoColumns": $root.vars.aoColumns,
-                "fnRowCallback": function(nRow, aData, iDisplayIndex) {
-                    nRow = $root.popularTabela(aData, nRow);
-                    return nRow;
-                },
-                "fnServerParams": function(aoData) {
-                    var object = $root.getOpcoesConsulta();
-                    for (var i = 0; i < object.length; i++) {
-                        aoData.push(object[i]);
-                    }
-                },
-                "fnInitComplete": function(oSettings, json) {
-                    $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
-                    $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
-                            $($root.vars.idTabela + "_wrapper .row").height()) + "px");
-                },
-                "fnServerData": $root.fnDataTablesPipeline
-            });
-            $('body').css('overflow-y', 'hidden');
-            $('.panel-search').html($('[id="panel-search.html"]').html());
-            $('[id="panel-search.html"]').remove();
-            var update_size = function() {
-                $($root.vars.idTabela).dataTable().fnAdjustColumnSizing(false);
-                $('.dataTables_scrollBody').css('height', (document.documentElement.clientHeight - $($root.vars.idTabela + "_wrapper").offset().top - 43 -
-                        $($root.vars.idTabela + "_wrapper .row").height()) + "px");
-            };
+            $.extend(dataTableConfig, $root.vars.dataTables);
 
-            $(window).resize(function() {
-                clearTimeout(window.refresh_size);
-                window.refresh_size = setTimeout(function() {
-                    update_size();
-                }, 100);
-            });
-            $('button[class="close"][aria-hidden="true"][data-dismiss="alert"]').on('click', function() {
-                $(window).resize();
+            $($root.vars.idTabela).append('<thead><tr><th></th></tr><tr><th></th></tr></thead>');
+            for (var key in dataTableConfig.columns) {
+                if (dataTableConfig.columns.hasOwnProperty(key)) {
+                    if (!dataTableConfig.columns[key].hasOwnProperty('createdCell'))
+                        dataTableConfig.columns[key].createdCell = function(td, cellData, rowData, row, col) {
+                            $root.generateCell(td, cellData, rowData, row, col);
+                        };
+
+                    var title = dataTableConfig.columns[key].title;
+                    var el = '<input class="dataTables_filter_column form-control" type="text" placeholder="Buscar ' + title + '" />';
+                    $($root.vars.idTabela + ' thead tr:eq(1)').append('<th>' + el + '</th>');
+                    $($root.vars.idTabela + ' thead tr:eq(0)').append('<th></th>');
+
+                }
+            }
+            /*
+             * colocar na primeira posicao o null para primeira coluna
+             */
+            dataTableConfig.columns.unshift({"data": null, createdCell: function(td, cellData, rowData, row, col) {
+                    var content = $root.getTdCheck(rowData[$root.vars.dataTables.identifier]).children().unwrap();
+                    $(td).html(content);
+                }});
+            $($root.vars.idTabela).DataTable(dataTableConfig);
+            $($root.vars.idBtnConsulta).appendTo($root.vars.idTabela + '_filter .input-group-btn');
+            $($root.vars.idBtnConsulta).show();
+            $($root.vars.idTabela + '_filter > label').addClass('col-xs-12');
+            $(".dataTables_filter_column").on('keyup change', function(e) {
+                if (e.which === 13) {
+                    $root.aplicarFiltros().draw();
+                }
             });
         },
         initialize: function(opcoes) {
@@ -342,7 +362,7 @@ define([
             $.extend(this.vars, opcoes);
             this.prepararTabela();
             if (this.vars.idHeadCheckTable != null)
-                $(this.vars.idHeadCheckTable).click(function(e) {
+                $('#' + this.vars.idHeadCheckTable).click(function(e) {
                     if (this.checked)
                         $("input[name=" + $root.vars.idTdCheckTable + ']:not(:checked)').each(function() {
                             this.checked = true;
@@ -352,11 +372,20 @@ define([
                             this.checked = false;
                         });
                 });
-            if (this.alterarOpcoesConsulta != null)
-                $(this.vars.idOpcoesConsulta).change(this.alterarOpcoesConsulta);
 
             this.acaoConsultar();
             this.acaoExcluir();
+            this.acaoLimparFiltros();
+            $(window).resize(function() {
+                clearTimeout(window.refresh_size);
+                window.refresh_size = setTimeout(function() {
+                    $root.updateSize();
+                }, 100);
+            });
+            $('body').css('overflow-y', 'hidden');
+            $('button[class="close"][aria-hidden="true"][data-dismiss="alert"]').on('click', function() {
+                $(window).resize();
+            });
             this.onsubmit('form');
         }
     };
