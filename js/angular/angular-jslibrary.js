@@ -53,16 +53,17 @@ define([
                                                     }
                                                 });
                                         });
-                                        $window.setTimeout(function() {
-                                            $('.modal .modal-footer').find('button').eq(0).focus();
-                                            $('.modal').draggable({
-                                                cursor: 'move'
-                                            });
-                                        }, 100);
+                                        d.opened.then(function(e) {
+                                            if (e) {
+                                                setTimeout(function() {
+                                                    $('.modal').find('.modal-footer').find('button').eq(0).focus();
+                                                    $('.modal').draggable({cursor: 'move'
+                                                    });
+                                                }, 100);
+                                            }
 
+                                        });
                                     });
-
-
                                 });
                             }]
                     };
@@ -147,97 +148,105 @@ define([
                 jsValidation = function($rootScope, $modal, $window) {
                     var $root = this;
 
-                                    this.selectorCodigo = "";
+                    this.selectorCodigo = "";
                     this.optionsModal = {
-                                    backdrop: true,
-                                keyboard: true,                     };
-                        this.validate = function(selectorForm) {
+                        backdrop: true,
+                        keyboard: true, };
+                    this.validate = function(selectorForm) {
                         var validateMethod = validateMethod = $.fn.validate;
-                    $.fn.validate = function(o) {
+                        $.fn.validate = function(o) {
                             if (o && o.rules) {
-                for (var name in o.rules) {
-                    var rule = o.rules[name];
-                        if (rule.required === true) {
-                    var label = $('label[for=\'' + name + '\']');
-                        label.html("* " + label.html());
+                                for (var name in o.rules) {
+                                    var rule = o.rules[name];
+                                    if (rule.required === true) {
+                                        var label = $('label[for=\'' + name + '\']');
+                                        label.html("* " + label.html());
                                     }
                                 }
                             }
-                    return $.proxy(validateMethod, this)(o);
-                    };
+                            return $.proxy(validateMethod, this)(o);
+                        };
                         $(selectorForm).validate($root.optionsValidation);
                     };
-                        this.optionsValidation = {
-                            rules: {},
+                    this.optionsValidation = {
+                        rules: {},
                         messages: {},
-                            highlight: function(element) {
+                        highlight: function(element) {
                             $(element).closest('.form-group').addClass('has-error');
                         },
-                    success: function(element) {
-                        $('input[name=\'' + element.attr('for') + "\']").
-                            addClass('valid').closest('.form-group').removeClass('has-error');
+                        success: function(element) {
+                            $('input[name=\'' + element.attr('for') + "\']").
+                                    addClass('valid').closest('.form-group').removeClass('has-error');
                         },
-                            errorPlacement: function(error, element) {
+                        errorPlacement: function(error, element) {
                             var ul = element.closest('.form-group').find('.help-block');
                             if (ul.length)
                                 ul.html("<li>" + error.html() + "</li>");
-                                    else
+                            else
                                 element.closest('.form-group').append("<ul class='help-block'><li>" + error.html() + "</li></ul>");
-                                    },
-                                invalidHandler: function(form, validator) {
-                    var num_errors = validator.numberOfInvalids();
-                        if (num_errors > 0) {
-                            var els = validator.invalidElements();
+                        },
+                        invalidHandler: function(form, validator) {
+                            var num_errors = validator.numberOfInvalids();
+                            if (num_errors > 0) {
+                                var els = validator.invalidElements();
                                 var el = $(els[0]);
                                 var label = $('label[for=\'' + el.attr('name') + '\']');
-                                    if (label.length > 0)
-                                        $('label[for=\'' + el.attr('name') + '\']').ScrollTo({
-                                offsetTop: 49
+                                if (label.length > 0)
+                                    $('label[for=\'' + el.attr('name') + '\']').ScrollTo({
+                                        offsetTop: 49
                                     });
-                                    else
+                                else
                                     $(els[0]).ScrollTo({
-                                    offsetTop: 59
-                                        });
-                                    }
+                                        offsetTop: 59
+                                    });
+                            }
                         },
-                            submitHandler: function(form) {
+                        submitHandler: function(form) {
                             if ($($root.selectorCodigo).val() != "") {
-                $rootScope.$apply(function() {
-                var d = $modal.open($root.optionsModal);
-                d.result.then(function(result) {
-                        if (result)
-                    form.submit();
-                        });
-            $window.setTimeout(function() {
-                $('.modal .modal-footer').find('button').eq(0).focus();
-                            $('.modal').draggable({                                             cursor: 'move'
-                    });
-                    }, 100);
-                        });
-                    } else
-                form.submit();
-                }
+                                $rootScope.$apply(function() {
+                                    var d = $modal.open($root.optionsModal);
+                                    d.result.then(function(result) {
+                                        if (result)
+                                            form.submit();
+                                    });
+                                    d.opened.then(function(e) {
+                                        if (e) {
+                                            setTimeout(function() {
+                                                $('.modal').find('.modal-footer').find('button').eq(0).focus();
+                                                $('.modal').draggable({cursor: 'move'
+                                                });
+                                            }, 100);
+                                        }
+
+                                    });
+                                });
+                            } else
+                                form.submit();
+                        }
                     };
-                    },
-                            jsUrl = function($window) {
+                    $('.modal').on('shown.bs.modal', function(e) {
+
+                    });
+                },
+                jsUrl = function($window) {
                     'use strict';
                     this.goToPath = function(url, target) {
-                    if (target === undefined)
-                    $window.location.href = url;
-                else
-    $window.open(url, target);
+                        if (target === undefined)
+                            $window.location.href = url;
+                        else
+                            $window.open(url, target);
                     };
                 },
-    jsTooltip = function($window) {
-    'use strict';
-    this.showTooltip = function(element, text, model) {
-    var el = $(element),
-    scope = angular.element(el).scope();
+                jsTooltip = function($window) {
+                    'use strict';
+                    this.showTooltip = function(element, text, model) {
+                        var el = $(element),
+                                scope = angular.element(el).scope();
                         scope[model] = text;
-    $window.setTimeout(function() {
-    el.blur().focus();
+                        $window.setTimeout(function() {
+                            el.blur().focus();
                         }, 100);
-};
+                    };
                     this.hideTooltip = function(element, model) {
                         var el = $(element),
                                 scope = angular.element(el).scope();
