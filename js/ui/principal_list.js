@@ -351,7 +351,7 @@ define([
             $($root.vars.idBtnConsulta).appendTo($root.vars.idTabela + '_filter .input-group-btn');
             $($root.vars.idBtnConsulta).show();
             $($root.vars.idTabela + '_filter > label').addClass('col-xs-12');
-            $(".dataTables_filter_column").on('keyup change', function(e) {
+            $(".dataTables_filter_column").on('keypress change', function(e) {
                 if (e.which === 13) {
                     $root.aplicarFiltros().draw();
                 }
