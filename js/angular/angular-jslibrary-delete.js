@@ -20,7 +20,6 @@ define([
                                 $scope.ajaxOptions = {
                                     type: 'post',
                                     url: '',
-                                    timeout: 100,
                                     message: "Excluido...",
                                     success: function() {
                                         $.unblockUI();
