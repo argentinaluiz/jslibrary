@@ -11,3 +11,8 @@ test
 /bower_components/
 /config.js
 /pages/
+/js/unit_tests/
+/coverage/
+/template/
+/fixture/
+/.gitignore
