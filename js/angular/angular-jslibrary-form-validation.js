@@ -80,7 +80,7 @@ define([
                     };
                     this.validate = function(selectorForm) {
                         $('input[required=required]').each(function() {
-                            $("label[for='" + $(this).attr('name') + "']").prepend('* ');
+                            $("label[for='" + $(this).attr('id') + "']").prepend('* ');
                         });
                         return $(selectorForm).validate(this.options.validation);
                     };
