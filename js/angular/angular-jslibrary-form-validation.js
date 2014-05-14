@@ -26,7 +26,7 @@ define([
                                 $(element).closest('.form-group').addClass('has-error');
                             },
                             success: function(element) {
-                                $('input[name=\'' + element.attr('for') + "\']").
+                                $('[id=\'' + element.attr('for') + "\']").
                                         addClass('valid').closest('.form-group').removeClass('has-error');
                             },
                             errorPlacement: function(error, element) {
