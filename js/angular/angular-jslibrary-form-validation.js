@@ -44,9 +44,9 @@ define([
                                 if (num_errors > 0) {
                                     var els = validator.invalidElements();
                                     var el = $(els[0]);
-                                    var label = $('label[for=\'' + el.attr('name') + '\']');
+                                    var label = $('label[for=\'' + el.attr('id') + '\']');
                                     if (label.length > 0) {
-                                        $('label[for=\'' + el.attr('name') + '\']').ScrollTo({
+                                        $('label[for=\'' + el.attr('id') + '\']').ScrollTo({
                                             offsetTop: 49
                                         });
                                     }
@@ -82,11 +82,14 @@ define([
                         }
                     };
                     this.validate = function(selectorForm) {
+                        return $(selectorForm).validate(this.options.validation);
+                    };
+                    this.init = function() {
                         $('input[required=required]').each(function() {
                             $("label[for='" + $(this).attr('id') + "']").prepend('* ');
                         });
-                        return $(selectorForm).validate(this.options.validation);
                     };
+                    this.init();
                 };
         jslibrary.service('$jsValidation', ['$rootScope', '$modal', jsValidation]);
     });
