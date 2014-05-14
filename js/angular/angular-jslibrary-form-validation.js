@@ -35,7 +35,6 @@ define([
                                     ul.html("<li>" + error.html() + "</li>");
                                 }
                                 else {
-                                    console.log(error);
                                     if (error.text() !== "")
                                         element.closest('.form-group').append("<ul class='help-block'><li>" + error.html() + "</li></ul>");
                                 }
