@@ -31,10 +31,14 @@ define([
                             },
                             errorPlacement: function(error, element) {
                                 var ul = element.closest('.form-group').find('.help-block');
-                                if (ul.length)
+                                if (ul.length) {
                                     ul.html("<li>" + error.html() + "</li>");
-                                else
-                                    element.closest('.form-group').append("<ul class='help-block'><li>" + error.html() + "</li></ul>");
+                                }
+                                else {
+                                    console.log(error);
+                                    if (error.text() !== "")
+                                        element.closest('.form-group').append("<ul class='help-block'><li>" + error.html() + "</li></ul>");
+                                }
                             },
                             invalidHandler: function(form, validator) {
                                 var num_errors = validator.numberOfInvalids();
