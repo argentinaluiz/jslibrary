@@ -1,19 +1,10 @@
 body {
     padding-top: 50px;
-    /*padding-bottom: 40px;*/
-    height: 100%;
-}
-html{
-    height: 100%;
 }
 
 .help-block{
     list-style:none;
     padding-left: 0;
-}
-
-.zf-green {
-    color: #68b604;
 }
 
 div.container a.brand {
@@ -30,24 +21,10 @@ div.container a.brand {
     text-decoration:#000;
 }
 
-.dataTables_scrollHeadInner table{
-    max-width: inherit !important;
-}
-
-.dataTables_scroll{
-    border-top: 1px solid #E5E5E5;
-}
-
-.dividerButton{
+.divider-line{
     margin-top: 10px;
     margin-bottom: 5px;
     display: inline-block;
-}
-
-.modal {
-    display: block;
-    height: 0;
-    overflow: visible;
 }
 
 .title-search{
